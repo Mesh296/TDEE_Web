@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Nutrition - TDEE App Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Nutrition";
+        var mkdocs_page_input_path = "nutrition.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> TDEE App Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../home/">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Nutrition</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#script-logic">Script Logic</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#imports-and-composables">Imports and Composables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#template-structure">Template Structure</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../result/">Result</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../history/">History</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../login/">Login</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../register/">Register</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profile/">Profile</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">TDEE App Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Nutrition</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="nutritionvue-documentation">Nutrition.vue Documentation</h1>
+<p>The Nutrition.vue file is a component within the Vue.js application responsible for presenting nutrition information for various foods. This document provides a breakdown of the template structure, script logic, and style considerations for developers.</p>
+<h2 id="script-logic">Script Logic</h2>
+<h3 id="imports-and-composables">Imports and Composables</h3>
+<pre><code class="language-js">import { useNutritionInfo } from '@/composables/useNutritionInfo';
+import FoodSearch from '.././components/nutrition/FoodSearch.vue';
+import NutritionInfo from '.././components/nutrition/NutritionInfo.vue';
+
+const { food, nutritionInfo, getNutritionInfo } = useNutritionInfo();
+
+const getFoodName = async (foodName) =&gt; {
+  await getNutritionInfo(foodName);
+};
+</code></pre>
+<pre><code class="language-js">//useNutritionInfo.js
+import { ref } from 'vue';
+import axios from 'axios';
+
+const apiKey = 'e5FpDu9gY6PdfuHUlvHyrHKvPfnKr0U4DkaFlYrX';
+
+export function useNutritionInfo() {
+  const food = ref(&quot;&quot;);
+  const nutritionInfo = ref({});
+
+  async function getNutritionInfo(foodName) {
+    const apiUrl = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${foodName}&amp;api_key=${apiKey}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const data = response.data;
+
+      if (data.foods &amp;&amp; data.foods.length &gt; 0) {
+        const food = data.foods[0];
+        const nutrients = food.foodNutrients;
+        nutritionInfo.value = {
+          calories: nutrients.find(n =&gt; n.nutrientName === &quot;Energy&quot;)?.value || 0,
+          protein: nutrients.find(n =&gt; n.nutrientName === &quot;Protein&quot;)?.value || 0,
+          fat: nutrients.find(n =&gt; n.nutrientName === &quot;Total lipid (fat)&quot;)?.value || 0,
+          carbs: nutrients.find(n =&gt; n.nutrientName === &quot;Carbohydrate, by difference&quot;)?.value || 0,
+        };
+      } else {
+        console.log(&quot;No nutrition information found for&quot;, foodName);
+      }
+    } catch (error) {
+      console.error('Error sending API request: ', error);
+    }
+  }
+
+  return { food, nutritionInfo, getNutritionInfo };
+}
+</code></pre>
+<ul>
+<li><strong>Description:</strong> This section imports necessary components and composables, including <code>useNutritionInfo</code> for managing nutritional data. It also defines the <code>getFoodName</code> function to retrieve nutrition information based on the entered food name.</li>
+</ul>
+<h3 id="template-structure">Template Structure</h3>
+<pre><code class="language-html">&lt;template&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;h1 class=&quot;nutrition-header&quot;&gt;Nutrition Infomation&lt;/h1&gt;
+    &lt;span&gt;This tool provides nutrition information for various foods based on data from the &lt;/span&gt;
+    &lt;a href=&quot;https://api.nal.usda.gov&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot; class=&quot;text-blue-500&quot;&gt;USDA FoodData Central API&lt;/a&gt;.
+    &lt;span&gt;All nutritional values are calculated per 100 grams of the respective food.&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;flex flex-col&quot;&gt;
+    &lt;FoodSearch :getFoodName=&quot;getFoodName&quot; /&gt;
+    &lt;NutritionInfo :foodName=&quot;food&quot; :nutritionInfo=&quot;nutritionInfo&quot; /&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Understanding Nutrition --&gt;
+  &lt;div class=&quot;container mt-5 p-4 bg-gray-100 dark:bg-[#1a1a1a]&quot;&gt;
+      &lt;h2 class=&quot;text-2xl font-semibold mb-3&quot;&gt;Understanding Nutrition&lt;/h2&gt;
+
+      &lt;p class=&quot;mb-4&quot;&gt;
+        &lt;strong&gt;Macronutrients (Macros):&lt;/strong&gt; In the context of health and fitness, macronutrients are chemical compounds that provide bulk energy. They include carbohydrates, proteins, and fats. This calculator focuses on daily carbohydrate, protein, and fat needs.
+      &lt;/p&gt;
+
+      &lt;p class=&quot;mb-4&quot;&gt;
+        &lt;strong&gt;Micronutrients:&lt;/strong&gt; Another essential part of human nutrition consisting of vitamins and dietary minerals such as Vitamin A, copper, iron, and iodine. Micronutrients are needed in smaller quantities compared to macronutrients.
+      &lt;/p&gt;
+
+      &lt;h3 class=&quot;text-xl font-semibold mb-2&quot;&gt;Protein&lt;/h3&gt;
+      &lt;p class=&quot;mb-4&quot;&gt;
+        Proteins are organic compounds comprised of amino acids, essential to well-being. Sources include both animal (meat, dairy) and plant-based (beans, legumes, nuts).
+      &lt;/p&gt;
+
+      &lt;h3 class=&quot;text-xl font-semibold mb-2&quot;&gt;Carbohydrates (Carbs)&lt;/h3&gt;
+      &lt;p class=&quot;mb-4&quot;&gt;
+        Carbohydrates are classified as sugar, starch, or fiber. They are essential for energy, with complex carbohydrates (from vegetables, fruits, whole grains) being beneficial.
+      &lt;/p&gt;
+
+      &lt;h3 class=&quot;text-xl font-semibold mb-2&quot;&gt;Fat&lt;/h3&gt;
+      &lt;p class=&quot;mb-4&quot;&gt;
+        Fats, though typically viewed as unhealthy, have structural and metabolic functions. Healthy fats include monounsaturated, polyunsaturated, and omega-3 fatty acids.
+      &lt;/p&gt;
+
+      &lt;h2 class=&quot;text-2xl font-semibold mb-3&quot;&gt;Daily Calorie Needs&lt;/h2&gt;
+      &lt;p class=&quot;mb-4&quot;&gt;
+        The number of calories a person needs daily is based on factors like height, weight, age, and activity level. The calculator estimates daily caloric needs using BMR/RDEE and activity factors.
+      &lt;/p&gt;
+
+      &lt;p class=&quot;mb-4&quot;&gt;
+        &lt;strong&gt;General recommendations:&lt;/strong&gt; Limit saturated fat, avoid trans fats, and replace them with healthier fats. Daily caloric needs vary based on factors like gender and activity level.
+      &lt;/p&gt;
+
+      &lt;p class=&quot;mb-4&quot;&gt;
+        &lt;strong&gt;Average daily caloric needs:&lt;/strong&gt; Men: 2000-3000, Women: 1600-2400. Actual needs depend on individual factors.
+      &lt;/p&gt;
+    &lt;/div&gt;
+
+&lt;/template&gt;
+</code></pre>
+<ul>
+<li><strong>Description:</strong> The template is structured to accommodate the Introduction Section and Food Search and Nutrition Info Sections sections.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../home/" class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../result/" class="btn btn-neutral float-right" title="Result">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../home/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../result/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

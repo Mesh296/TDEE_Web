@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Profile - TDEE App Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Profile";
+        var mkdocs_page_input_path = "profile.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> TDEE App Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../home/">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nutrition/">Nutrition</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../result/">Result</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../history/">History</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../login/">Login</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../register/">Register</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Profile</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#script-logic">Script Logic</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#reactive-variables">Reactive Variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#template-structure">Template Structure</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">TDEE App Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">User</li>
+      <li class="breadcrumb-item active">Profile</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="profilevue-documentation">Profile.vue Documentation</h1>
+<p>The Profile.vue file is a Vue.js component responsible for rendering the user profile information. This document provides an explanation of the template structure, script logic, and styles within the component.</p>
+<h2 id="script-logic">Script Logic</h2>
+<h3 id="reactive-variables">Reactive Variables</h3>
+<pre><code class="language-js">&lt;script setup&gt;
+import { ref, onMounted, watchEffect } from 'vue';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
+
+const auth = getAuth();
+const db = getFirestore();
+
+const userId = ref(null);
+const profile = ref({
+    name: '',
+    age: '',
+    height: '',
+    weight: '',
+    gender: '',
+});
+
+const editMode = ref(false);
+let originalProfile = null;
+
+const toggleEditMode = () =&gt; {
+    if (editMode.value) {
+        // Cancel editing, restore original values
+        profile.value = { ...originalProfile };
+        originalProfile = null;
+    } else {
+        // Enter editing mode, store the original values
+        originalProfile = { ...profile.value };
+    }
+
+    editMode.value = !editMode.value;
+};
+
+const saveProfile = async () =&gt; {
+    try {
+        // Update user document in Firestore
+        const usersCollection = doc(db, 'users', userId.value);
+        await updateDoc(usersCollection, profile.value);
+
+        console.log('Profile saved:', profile.value);
+        originalProfile = { ...profile.value };
+        toggleEditMode(); // Exit edit mode after saving
+    } catch (error) {
+        console.error('Error saving user profile:', error);
+    }
+};
+
+const fetchUserProfile = async () =&gt; {
+    try {
+        const usersCollection = doc(db, 'users', userId.value);
+        const docSnap = await getDoc(usersCollection);
+
+        if (docSnap.exists()) {
+            const userData = docSnap.data();
+            profile.value = { ...userData };
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+};
+
+// Listen for changes in authentication state
+onAuthStateChanged(auth, (user) =&gt; {
+    if (user) {
+        userId.value = user.uid;
+        fetchUserProfile();
+    }
+});
+
+// Watch for changes in user ID and fetch the profile
+watchEffect(() =&gt; {
+    if (userId.value) {
+        fetchUserProfile();
+    }
+});
+&lt;/script&gt;
+
+&lt;/script&gt;
+</code></pre>
+<ul>
+<li>
+<p><strong>Description:</strong> The script section uses the script setup syntax. It imports necessary functions from Firebase, including authentication functions and Firestore functions.</p>
+<ul>
+<li>
+<p>The <code>toggleEditMode</code> method toggles between the editable and non-editable modes of the user profile.</p>
+</li>
+<li>
+<p>The <code>saveProfile</code> method updates the user document in Firestore with the edited profile information.</p>
+</li>
+<li>
+<p>The <code>fetchUserProfile</code> method retrieves the user's profile information from Firestore.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="template-structure">Template Structure</h3>
+<pre><code class="language-html">&lt;template&gt;
+    &lt;div class=&quot;profile-container&quot;&gt;
+        &lt;!-- ... (Omitted for brevity) ... --&gt;
+
+        &lt;div v-if=&quot;!editMode&quot; class=&quot;w-full md:w-3/5 p-8 bg-white lg:ml-4 shadow-md&quot;&gt;
+            &lt;!-- ... (Omitted for brevity) ... --&gt;
+        &lt;/div&gt;
+
+        &lt;div v-else class=&quot;w-full md:w-3/5 p-8 bg-white lg:ml-4 shadow-md&quot;&gt;
+            &lt;!-- ... (Omitted for brevity) ... --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+<ul>
+<li><strong>Description:</strong> The template section includes a user profile display with editable fields. It provides the user's <code>name</code>, <code>age</code>, <code>height</code>, <code>weight</code>, and <code>gender</code>. The profile is initially displayed in a non-editable mode. When the user clicks the <code>Edit</code> button, the fields become editable, and the <code>Save</code> and <code>Cancel</code> buttons appear.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../register/" class="btn btn-neutral float-left" title="Register"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../register/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
