@@ -6,7 +6,10 @@ The TDEE App is designed to help users manage their nutritional goals and track 
 
 ## Navigation
 - Home: Introduction to the TDEE App.
+![image](https://github.com/Mesh296/TDEE_Web/assets/67594792/9b92bce0-02f1-470f-92ba-3c38ce2c5a41)
 - Nutrition: Explore nutritional information and understand the significance of macronutrients and micronutrients.
+![image](https://github.com/Mesh296/TDEE_Web/assets/67594792/2d0c21d3-61fc-4725-8997-0d6b19a2b7cd)
+
 - Result: Learn about the BMI score, maintenance calories, and get personalized recommendations.
 - History: Access historical data related to nutrition tracking.
 - User:
@@ -20,3 +23,4 @@ Navigate through the documentation using the sidebar on the left. Each section p
 Feel free to explore the documentation and make the most of the TDEE App to achieve your nutritional and fitness goals.
 
 Let's get started!
+
