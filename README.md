@@ -18,7 +18,7 @@ The TDEE App is designed to help users manage their nutritional goals and track 
     - Profile: Manage and update your user profile.
   
 ## How to Use This Documentation
-Navigate through the documentation using the sidebar on the left. Each section provides detailed information on a specific aspect of the TDEE App. Whether you are a new user or a developer integrating with the app, you will find guides, explanations, and code snippets to assist you.
+Navigate through the documentation using the navigation bar on the top. Each section provides detailed information on a specific aspect of the TDEE App. Whether you are a new user or a developer integrating with the app, you will find guides, explanations, and code snippets to assist you.
 
 Feel free to explore the documentation and make the most of the TDEE App to achieve your nutritional and fitness goals.
 
